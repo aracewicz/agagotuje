@@ -5,6 +5,7 @@ services:
         ARCH__DOCKER_IMAGE__TAG__BUILD_NUMBER: "20251019.0.436919"
         ARCH__MIRROR__DATE: "2025/10/19"
         NODE_JS__PACKAGE__VERSION: "24.9.0-1"
+        NPM_PACKAGE_VERSION: "11.6.3-1"
       context: "."
       dockerfile: "Dockerfile"
     volumes:

@@ -14,4 +14,8 @@ ARG NODE_JS__PACKAGE__VERSION
 ENV NODE_JS__PACKAGE__VERSION=${NODE_JS__PACKAGE__VERSION}
 ADD https://archive.archlinux.org/packages/n/nodejs/nodejs-${NODE_JS__PACKAGE__VERSION}-x86_64.pkg.tar.zst /tmp/nodejs.pkg.tar.zst
 RUN pacman -U --noconfirm /tmp/nodejs.pkg.tar.zst
+ARG NPM_PACKAGE_VERSION
+ENV NPM_PACKAGE_VERSION=${NPM_PACKAGE_VERSION}
+ADD https://archive.archlinux.org/packages/n/npm/npm-${NPM_PACKAGE_VERSION}-any.pkg.tar.zst /tmp/npm.pkg.tar.zst
+RUN pacman -U --noconfirm /tmp/npm.pkg.tar.zst
 USER developer
