@@ -2,7 +2,9 @@
 	"capAdd": [],
 	"containerEnv": {},
 	"containerUser": "developer",
-	"customizations": {"vscode": {"extensions": ["esbenp.prettier-vscode"]}},
+	"customizations": {
+		"vscode": {"extensions": ["esbenp.prettier-vscode", "svelte.svelte-vscode"]}
+	},
 	"dockerComposeFile": ["./docker-compose.yaml"],
 	"features": {},
 	"forwardPorts": [],

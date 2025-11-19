@@ -17,7 +17,7 @@
 		"forceConsistentCasingInFileNames": false,
 		"isolatedDeclarations": false,
 		"isolatedModules": true,
-		"lib": ["ESNext"],
+		"lib": ["DOM", "ESNext"],
 		"libReplacement": false,
 		"maxNodeModuleJsDepth": 0,
 		"module": "node18",
@@ -57,7 +57,11 @@
 		"verbatimModuleSyntax": true
 	},
 	"exclude": ["./.git", "./node_modules"],
-	"extends": [],
-	"include": ["./**/*"],
+	"extends": ["./.svelte-kit/tsconfig.json"],
+	"include": [
+		"./**/*",
+		"./.svelte-kit/ambient.d.ts",
+		"./.svelte-kit/non-ambient.d.ts"
+	],
 	"references": []
 }

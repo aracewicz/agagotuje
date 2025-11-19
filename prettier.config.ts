@@ -7,7 +7,7 @@ export default {
 	experimentalTernaries: true,
 	objectWrap: "collapse",
 	overrides: [],
-	plugins: [],
+	plugins: ["prettier-plugin-svelte"],
 	printWidth: 80,
 	quoteProps: "preserve",
 	semi: true,
