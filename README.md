@@ -1,0 +1,1 @@
+aniagotuje ale to uzytkownicy wrzucaja przepisy bo aga nie umie gotowac
