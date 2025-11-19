@@ -10,4 +10,8 @@ RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm git
 RUN pacman -S --noconfirm openssh
 RUN useradd -m developer
+ARG NODE_JS__PACKAGE__VERSION
+ENV NODE_JS__PACKAGE__VERSION=${NODE_JS__PACKAGE__VERSION}
+ADD https://archive.archlinux.org/packages/n/nodejs/nodejs-${NODE_JS__PACKAGE__VERSION}-x86_64.pkg.tar.zst /tmp/nodejs.pkg.tar.zst
+RUN pacman -U --noconfirm /tmp/nodejs.pkg.tar.zst
 USER developer
