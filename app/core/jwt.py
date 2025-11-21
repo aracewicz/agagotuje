@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from jose import jwt
 
-SECRET_KEY = "supersekretnyklucz123"
+SECRET_KEY = "ALAMAKOTA23"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

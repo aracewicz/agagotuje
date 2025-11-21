@@ -1,36 +1,53 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordRequestForm
 from app.core.database import get_db
-from app.schemas.auth import RegisterUser, LoginUser, Token
-from app.crud.user import create_user, get_user_by_email
-from app.core.security import verify_password
+from app.models.user import User
+from app.schemas.user import UserCreate, UserRead
+from app.core.security import hash_password, verify_password
 from app.core.jwt import create_access_token
+
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post("/register", response_model=Token)
-def register_user(data: RegisterUser, db: Session = Depends(get_db)):
+@router.post("/register", response_model=UserRead)
+def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
-    existing = get_user_by_email(db, data.email)
+    existing = db.query(User).filter(User.email == user_data.email).first()
     if existing:
 
-        raise HTTPException(400, "Email already exists")
+        raise HTTPException(status_code=400, detail="Email already in use")
 
-    user = create_user(db, data)
-    token = create_access_token({"user_id": user.id})
-    return Token(access_token=token)
+    hashed = hash_password(user_data.password)
 
-@router.post("/login", response_model=Token)
-def login(data: LoginUser, db: Session = Depends(get_db)):
+    new_user = User(
+        email=user_data.email,
+        username=user_data.username,
+        password_hash=hashed,
+        role="user" 
+    )
 
-    user = get_user_by_email(db, data.email)
-    if not user:
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
 
-        raise HTTPException(400, "Invalid email or password")
+    return new_user
 
-    if not verify_password(data.password, user.password):
+@router.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 
-        raise HTTPException(400, "Invalid email or password")
+    user = db.query(User).filter(User.email == form_data.username).first()
 
-    token = create_access_token({"user_id": user.id})
-    return Token(access_token=token)
+    if not user or not verify_password(form_data.password, user.password_hash):
+
+        raise HTTPException(status_code=400, detail="Invalid email or password")
+
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "role": user.role
+    })
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }

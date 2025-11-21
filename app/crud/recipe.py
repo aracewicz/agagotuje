@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
 from app.models.recipe import Recipe
-from app.schemas.recipe import RecipeCreate
+from app.schemas.recipe import RecipeCreate, RecipeUpdate
 import json
+
+def get_recipe(db: Session, recipe_id: int):
+
+    return db.query(Recipe).filter(Recipe.id == recipe_id).first()
 
 def create_recipe(db: Session, recipe: RecipeCreate, user_id: int):
 
@@ -18,18 +22,20 @@ def create_recipe(db: Session, recipe: RecipeCreate, user_id: int):
     db.refresh(db_recipe)
     return db_recipe
 
-def get_recipe(db: Session, recipe_id: int):
+def update_recipe(db: Session, recipe: Recipe, data: RecipeUpdate):
 
-    return db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if data.title is not None:
 
-def get_all_recipes(db: Session):
-    return db.query(Recipe).all()
+        recipe.title = data.title
+    if data.description is not None:
 
-def delete_recipe(db: Session, recipe_id: int):
+        recipe.description = data.description
 
-    recipe = get_recipe(db, recipe_id)
-    if recipe:
-        
-        db.delete(recipe)
-        db.commit()
+    db.commit()
+    db.refresh(recipe)
     return recipe
+
+def delete_recipe(db: Session, recipe: Recipe):
+
+    db.delete(recipe)
+    db.commit()

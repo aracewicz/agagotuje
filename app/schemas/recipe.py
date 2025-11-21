@@ -8,15 +8,19 @@ class RecipeBase(BaseModel):
     description: str
     steps: List[str]
     time_minutes: int
-
 class RecipeCreate(RecipeBase):
 
     pass
 
+class RecipeUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+
 class RecipeOut(RecipeBase):
 
     id: int
-    user_id: int
+    owner_id: int
 
     class Config:
+
         from_attributes = True

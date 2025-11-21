@@ -9,6 +9,11 @@ class UserCreate(UserBase):
 
     password: str
 
+class UserRead(BaseModel):
+    id: int
+    email: EmailStr
+    username: str
+
 class UserOut(UserBase):
 
     id: int

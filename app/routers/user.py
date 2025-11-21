@@ -4,6 +4,7 @@ from app.core.database import get_db
 from app.schemas.user import UserCreate, UserOut
 from app.crud.user import get_user, create_user, get_user_by_email
 
+
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/", response_model=UserOut)

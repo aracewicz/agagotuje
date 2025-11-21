@@ -8,7 +8,7 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    Ingredients = Column(String, nullable=False)
+    ingredients = Column(String, nullable=False)
     description = Column(Text, nullable=False)
     author_id = Column(Integer, ForeignKey("users.id"))
 
