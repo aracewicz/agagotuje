@@ -1,1 +1,1 @@
-aniagotuje ale to uzytkownicy wrzucaja przepisy bo aga nie umie gotowac
+agagotuje to aniagotuje ale to uzytkownicy wrzucaja przepisy bo aga nie umie gotowac
