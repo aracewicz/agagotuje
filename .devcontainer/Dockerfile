@@ -18,4 +18,5 @@ ARG NPM_PACKAGE_VERSION
 ENV NPM_PACKAGE_VERSION=${NPM_PACKAGE_VERSION}
 ADD https://archive.archlinux.org/packages/n/npm/npm-${NPM_PACKAGE_VERSION}-any.pkg.tar.zst /tmp/npm.pkg.tar.zst
 RUN pacman -U --noconfirm /tmp/npm.pkg.tar.zst
+RUN groupadd -g 969 docker && usermod -aG docker developer && pacman -S --noconfirm docker docker-compose
 USER developer

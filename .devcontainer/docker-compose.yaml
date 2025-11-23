@@ -14,3 +14,8 @@ services:
         source: ".."
         target: "/home/developer/agagotuje-frontend"
         type: "bind"
+      - consistency: "consistent"
+        read_only: false
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+        type: "bind"
