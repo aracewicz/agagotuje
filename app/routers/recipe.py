@@ -3,8 +3,14 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.recipe import RecipeCreate, RecipeOut, RecipeUpdate
 from app.crud.recipe import get_recipe, create_recipe, update_recipe, delete_recipe
+from typing import List
 
 router = APIRouter(prefix="/recipes", tags=["Recipes"])
+
+
+@router.get("/", response_model=List[RecipeOut])
+def get_all_recipes(db: Session = Depends(get_db)):
+    return db.query(RecipeCreate).all()
 
 @router.get("/{recipe_id}", response_model=RecipeOut)
 def read_recipe(recipe_id: int, db: Session = Depends(get_db)):

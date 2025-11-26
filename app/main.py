@@ -8,13 +8,24 @@ from app.core.errors import (
     validation_exception_handler,
     unhandled_exception_handler
 )
-from app.routers import user, recipe, rating, auth
+from app.routers import user, recipe, rating, auth, category
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse("app/static/favicon.ico")
+
 app.include_router(user.router)
 app.include_router(recipe.router)
 app.include_router(rating.router)
 app.include_router(auth.router)
+app.include_router(category.router)
 app.add_exception_handler(StarletteHTTPException, http_error_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)

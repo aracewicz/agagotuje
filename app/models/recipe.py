@@ -12,5 +12,7 @@ class Recipe(Base):
     description = Column(Text, nullable=False)
     author_id = Column(Integer, ForeignKey("users.id"))
 
+    category_id = Column(Integer, ForeignKey("categories.id"))
+    category = relationship("Category", back_populates="recipes")
     author = relationship("User", back_populates="recipes")
     ratings = relationship("Rating", back_populates="recipe")
