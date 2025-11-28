@@ -11,6 +11,8 @@ from app.core.errors import (
 from app.routers import user, recipe, rating, auth, category
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from app.models.category import Category, DEFAULT_CATEGORIES
+from app.core.database import SessionLocal
 
 
 app = FastAPI()
@@ -32,9 +34,24 @@ app.add_exception_handler(Exception, unhandled_exception_handler)
 
 
 @app.on_event("startup")
+@app.on_event("startup")
 def startup():
 
     Base.metadata.create_all(bind=engine)
+
+    db = SessionLocal()
+    try:
+
+        if db.query(Category).count() == 0:
+
+            for name in DEFAULT_CATEGORIES:
+
+                db.add(Category(name=name))
+            db.commit()
+            print("✓ Dodano domyślne kategorie.")
+    finally:
+        
+        db.close()
 
 @app.get("/")
 def root():
