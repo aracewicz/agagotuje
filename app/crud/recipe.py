@@ -7,20 +7,18 @@ def get_recipe(db: Session, recipe_id: int):
 
     return db.query(Recipe).filter(Recipe.id == recipe_id).first()
 
-def create_recipe(db: Session, recipe: RecipeCreate, user_id: int):
-
-    db_recipe = Recipe(
-        title = recipe.title,
-        ingredients = json.dumps(recipe.ingredients),
-        description = recipe.description,
-        steps = json.dumps(recipe.steps),
-        time_minutes = recipe.time_minutes,
-        user_id = user_id
+def create_recipe(db: Session, data: dict, user_id: int):
+    recipe = Recipe(
+        title=data["title"],
+        description=data["description"],
+        image_url=data.get("image_url"),
+        user_id=user_id
     )
-    db.add(db_recipe)
+
+    db.add(recipe)
     db.commit()
-    db.refresh(db_recipe)
-    return db_recipe
+    db.refresh(recipe)
+    return recipe
 
 def update_recipe(db: Session, recipe: Recipe, data: RecipeUpdate):
 

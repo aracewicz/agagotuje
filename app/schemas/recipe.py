@@ -20,6 +20,7 @@ class RecipeOut(RecipeBase):
 
     id: int
     owner_id: int
+    image_url: str | None = None
 
     class Config:
 

@@ -32,7 +32,6 @@ app.add_exception_handler(StarletteHTTPException, http_error_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
 
-
 @app.on_event("startup")
 @app.on_event("startup")
 def startup():
