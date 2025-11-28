@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.models.category import Category, DEFAULT_CATEGORIES
 from app.core.database import SessionLocal
+from app.core.security import get_current_admin
 
 
 app = FastAPI()
