@@ -1,9 +1,15 @@
 <script lang="ts">
-	type Props = {readonly title?: string; readonly subtitle?: string};
-
+	type Props = {
+		readonly title?: string;
+		readonly subtitle?: string;
+		readonly errorMessage?: string | undefined;
+	};
 	const props: Props = $props();
-	const {title = "Rejestracja", subtitle = "Podaj imię i adres e-mail"} = props;
-
+	const {
+		title = "Rejestracja",
+		subtitle = "Podaj imię i adres e-mail",
+		errorMessage,
+	} = props;
 	function goBack() {
 		history.back();
 	}
@@ -19,8 +25,20 @@
 		<form method="POST" class="register-form">
 			<input name="name" type="text" placeholder="Imię" required />
 			<input name="email" type="email" placeholder="Adres e-mail" required />
+			<input
+				name="password"
+				type="password"
+				placeholder="Hasło"
+				required
+				minlength="6"
+			/>
 			<button type="submit">Zarejestruj się</button>
 		</form>
+		{#if errorMessage}
+			<p class="register-error" role="alert" aria-live="polite">
+				{errorMessage}
+			</p>
+		{/if}
 	</div>
 </main>
 
@@ -82,6 +100,15 @@
 		font-weight: 600;
 		cursor: pointer;
 		border-radius: 4px;
+	}
+	.register-error {
+		margin-top: 1rem;
+		color: #8c1d18;
+		background: #fdecec;
+		border: 1px solid rgba(140, 29, 24, 0.2);
+		padding: 0.65rem 0.85rem;
+		border-radius: 4px;
+		font-weight: 500;
 	}
 	:global(.hero) {
 		min-height: 34vh;

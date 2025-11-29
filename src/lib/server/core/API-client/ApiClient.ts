@@ -1,61 +1,60 @@
 import {z} from "zod";
 export type ApiError = {readonly message: string; readonly body: unknown};
-export type ApiSuccess<T> = {
+export type ApiSuccess<DataType> = {
 	readonly success: true;
 	readonly status: number;
-	readonly data: T;
+	readonly data: DataType;
 };
 export type ApiFailure = {
 	readonly success: false;
 	readonly status: number;
 	readonly error: ApiError;
 };
-export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
-const TokenSchema = z
+export type ApiResponse<DataType> = ApiSuccess<DataType> | ApiFailure;
+const schemaOfToken = z
 	.strictObject({
 		access_token: z.string().nonempty(),
 		token_type: z.string().nonempty(),
 	})
 	.readonly();
-const UserSchema = z
+const schemaOfUser = z
 	.strictObject({
 		id: z.number().int().nonnegative(),
 		email: z.string().email().nonempty(),
 		username: z.string().nonempty(),
 	})
 	.readonly();
-const CategorySchema = z
+const schemaOfCategory = z
 	.strictObject({
 		id: z.number().int().nonnegative(),
 		name: z.string().nonempty(),
 	})
 	.readonly();
-const RecipeSchema = z
+const schemaOfRecipe = z
 	.strictObject({
 		id: z.number().int().nonnegative(),
 		title: z.string().nonempty(),
-		ingredients: z.array(z.string().nonempty()).readonly(),
 		description: z.string().nonempty(),
-		steps: z.array(z.string().nonempty()).readonly(),
-		time_minutes: z.number(),
-		owner_id: z.number().int().nonnegative(),
-		image_url: z.url(),
+		author_id: z.number().int().nonnegative(),
+		image_url: z.string().url().optional(),
 	})
 	.readonly();
-export type Recipe = z.infer<typeof RecipeSchema>;
-const RatingSchema = z
+export type Recipe = z.infer<typeof schemaOfRecipe>;
+const schemaOfRating = z
 	.strictObject({
 		id: z.number().int().nonnegative(),
-		score: z.number(),
+		value: z.number(),
 		recipe_id: z.number().int().nonnegative(),
 		user_id: z.number().int().nonnegative(),
 	})
 	.readonly();
-const DetailSchema = z.strictObject({detail: z.string().nonempty()}).readonly();
-const CategoryListSchema = z.array(CategorySchema).readonly();
-const RecipeListSchema = z.array(RecipeSchema).readonly();
-export type RecipeList = z.infer<typeof RecipeListSchema>;
-const RatingListSchema = z.array(RatingSchema).readonly();
+const schemaOfDetail = z
+	.strictObject({detail: z.string().nonempty()})
+	.readonly();
+const schemaOfCategoryList = z.array(schemaOfCategory).readonly();
+const schemaOfRecipeList = z.array(schemaOfRecipe).readonly();
+export type RecipeList = z.infer<typeof schemaOfRecipeList>;
+const schemaOfRatingList = z.array(schemaOfRating).readonly();
 export type RegisterPayload = {
 	readonly email: string;
 	readonly username: string;
@@ -65,17 +64,15 @@ export type LoginPayload = {readonly email: string; readonly password: string};
 export type CategoryPayload = {readonly name: string};
 export type RecipePayload = {
 	readonly title: string;
-	readonly ingredients: readonly string[];
 	readonly description: string;
-	readonly steps: readonly string[];
-	readonly time_minutes: number;
+	readonly image?: File | null;
 };
 export type RecipeUpdatePayload = {
 	readonly title: string | null;
 	readonly description: string | null;
 };
 export type RatingPayload = {
-	readonly score: number;
+	readonly value: number;
 	readonly recipe_id: number;
 };
 export type CreateUserPayload = {
@@ -89,89 +86,123 @@ export class ApiClient {
 		this.baseUrl = baseUrl.replace(/\/+$/, "");
 	}
 	private buildUrl(path: string): string {
-		const normalized = path.startsWith("/") ? path : `/${path}`;
-		const url = `${this.baseUrl}${normalized}`;
-		return url;
+		const n = path.startsWith("/") ? path : `/${path}`;
+		return `${this.baseUrl}${n}`;
 	}
 	private buildBaseHeaders(): Record<string, string> {
-		const headers: Record<string, string> = {Accept: "application/json"};
-		return headers;
+		return {Accept: "application/json"};
 	}
 	private buildJsonHeaders(): Record<string, string> {
-		const headers = this.buildBaseHeaders();
-		headers["Content-Type"] = "application/json";
-		return headers;
+		return {Accept: "application/json", "Content-Type": "application/json"};
 	}
 	private buildFormHeaders(): Record<string, string> {
-		const headers = this.buildBaseHeaders();
-		headers["Content-Type"] = "application/x-www-form-urlencoded";
-		return headers;
+		return {
+			Accept: "application/json",
+			"Content-Type": "application/x-www-form-urlencoded",
+		};
+	}
+	private buildAuthHeaders(token: string): Record<string, string> {
+		return {Accept: "application/json", Authorization: `Bearer ${token}`};
+	}
+	private buildJsonAuthHeaders(token: string): Record<string, string> {
+		return {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		};
+	}
+	private buildFormAuthHeaders(token: string): Record<string, string> {
+		return {
+			Accept: "application/json",
+			"Content-Type": "application/x-www-form-urlencoded",
+			Authorization: `Bearer ${token}`,
+		};
 	}
 	private failure(status: number, message: string, body: unknown): ApiFailure {
-		const result: ApiFailure = {success: false, status, error: {message, body}};
-		return result;
+		return {success: false, status, error: {message, body}};
 	}
-	private success<T>(status: number, data: T): ApiSuccess<T> {
-		const result: ApiSuccess<T> = {success: true, status, data};
-		return result;
+	private success<DataType>(
+		status: number,
+		data: DataType,
+	): ApiSuccess<DataType> {
+		return {success: true, status, data};
 	}
-	private async parseBody(response: Response): Promise<unknown> {
-		const text = await response.text();
-		if (text.length === 0) {
-			const empty = null;
-			return empty;
-		}
+	private async parseBody(r: Response): Promise<unknown> {
+		const t = await r.text();
+		if (t.length === 0) return null;
 		try {
-			const parsed = JSON.parse(text);
-			return parsed;
+			return JSON.parse(t);
 		} catch {
-			const fallback = text;
-			return fallback;
+			return t;
 		}
 	}
-	private async send<S extends z.ZodTypeAny>(
+	private async send<SchemaType extends z.ZodTypeAny>(
 		path: string,
 		method: string,
 		init: RequestInit,
-		schema: S,
-	): Promise<ApiResponse<z.infer<S>>> {
+		schema: SchemaType,
+	) {
 		try {
-			const requestInit: RequestInit = {...init, method};
-			const response = await fetch(this.buildUrl(path), requestInit);
-			const parsed = await this.parseBody(response);
-			if (!response.ok) {
-				const failureResponse = this.failure(
-					response.status,
-					response.statusText.length > 0 ?
-						response.statusText
-					:	"Request failed",
+			const rr: RequestInit = {...init, method};
+			const res = await fetch(this.buildUrl(path), rr);
+			const parsed = await this.parseBody(res);
+			if (!res.ok)
+				return this.failure(
+					res.status,
+					res.statusText || "Request failed",
 					parsed,
 				);
-				return failureResponse;
-			}
-			const validated = schema.safeParse(parsed);
-			if (!validated.success) {
-				const invalidResponse = this.failure(
-					response.status,
-					"Response validation failed",
-					parsed,
-				);
-				return invalidResponse;
-			}
-			const successResponse = this.success(response.status, validated.data);
-			return successResponse;
-		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : "Unknown error";
-			const failureResponse = this.failure(0, message, null);
-			return failureResponse;
+			const val = schema.safeParse(parsed);
+			if (!val.success)
+				return this.failure(res.status, "Response validation failed", parsed);
+			return this.success(res.status, val.data);
+		} catch (e) {
+			return this.failure(
+				0,
+				e instanceof Error ? e.message : "Unknown error",
+				null,
+			);
 		}
 	}
-	private async sendWithJsonBody<S extends z.ZodTypeAny>(
+	private async sendAuth<SchemaType extends z.ZodTypeAny>(
+		path: string,
+		method: string,
+		init: RequestInit,
+		schema: SchemaType,
+		token: string,
+	) {
+		try {
+			const rr: RequestInit = {
+				...init,
+				method,
+				headers: {...(init.headers ?? {}), Authorization: `Bearer ${token}`},
+			};
+			const res = await fetch(this.buildUrl(path), rr);
+			const parsed = await this.parseBody(res);
+			if (!res.ok)
+				return this.failure(
+					res.status,
+					res.statusText || "Request failed",
+					parsed,
+				);
+			const val = schema.safeParse(parsed);
+			if (!val.success)
+				return this.failure(res.status, "Response validation failed", parsed);
+			return this.success(res.status, val.data);
+		} catch (e) {
+			return this.failure(
+				0,
+				e instanceof Error ? e.message : "Unknown error",
+				null,
+			);
+		}
+	}
+	private async sendWithJsonBody<SchemaType extends z.ZodTypeAny>(
 		path: string,
 		method: string,
 		body: unknown,
-		schema: S,
-	): Promise<ApiResponse<z.infer<S>>> {
+		schema: SchemaType,
+	) {
 		return this.send(
 			path,
 			method,
@@ -179,12 +210,27 @@ export class ApiClient {
 			schema,
 		);
 	}
-	private async sendWithFormBody<S extends z.ZodTypeAny>(
+	private async sendWithJsonBodyAuth<SchemaType extends z.ZodTypeAny>(
+		path: string,
+		method: string,
+		body: unknown,
+		schema: SchemaType,
+		token: string,
+	) {
+		return this.sendAuth(
+			path,
+			method,
+			{headers: this.buildJsonAuthHeaders(token), body: JSON.stringify(body)},
+			schema,
+			token,
+		);
+	}
+	private async sendWithFormBody<SchemaType extends z.ZodTypeAny>(
 		path: string,
 		method: string,
 		body: URLSearchParams,
-		schema: S,
-	): Promise<ApiResponse<z.infer<S>>> {
+		schema: SchemaType,
+	) {
 		return this.send(
 			path,
 			method,
@@ -192,192 +238,202 @@ export class ApiClient {
 			schema,
 		);
 	}
-	private async sendWithoutBody<S extends z.ZodTypeAny>(
+	private async sendWithFormBodyAuth<SchemaType extends z.ZodTypeAny>(
 		path: string,
 		method: string,
-		schema: S,
-	): Promise<ApiResponse<z.infer<S>>> {
+		body: URLSearchParams,
+		schema: SchemaType,
+		token: string,
+	) {
+		return this.sendAuth(
+			path,
+			method,
+			{headers: this.buildFormAuthHeaders(token), body},
+			schema,
+			token,
+		);
+	}
+	private async sendWithoutBody<SchemaType extends z.ZodTypeAny>(
+		path: string,
+		method: string,
+		schema: SchemaType,
+	) {
 		return this.send(path, method, {headers: this.buildBaseHeaders()}, schema);
 	}
-	public async registerUser(
-		payload: RegisterPayload,
-	): Promise<ApiResponse<z.infer<typeof UserSchema>>> {
-		const response = await this.sendWithJsonBody(
+	private async sendWithoutBodyAuth<SchemaType extends z.ZodTypeAny>(
+		path: string,
+		method: string,
+		schema: SchemaType,
+		token: string,
+	) {
+		return this.sendAuth(
+			path,
+			method,
+			{headers: this.buildAuthHeaders(token)},
+			schema,
+			token,
+		);
+	}
+	public async registerUser(payload: RegisterPayload) {
+		const result = this.sendWithJsonBody(
 			"/auth/register",
 			"POST",
 			payload,
-			UserSchema,
+			schemaOfUser,
 		);
-		return response;
+		return result;
 	}
-	public async login(
-		payload: LoginPayload,
-	): Promise<ApiResponse<z.infer<typeof TokenSchema>>> {
-		const form = new URLSearchParams();
-		form.set("username", payload.email);
-		form.set("password", payload.password);
-		const response = await this.sendWithFormBody(
+	public async login(payload: LoginPayload) {
+		const f = new URLSearchParams();
+		f.set("username", payload.email);
+		f.set("password", payload.password);
+		const result = this.sendWithFormBody(
 			"/auth/login",
 			"POST",
-			form,
-			TokenSchema,
+			f,
+			schemaOfToken,
 		);
-		return response;
+		return result;
 	}
-	public async listCategories(): Promise<
-		ApiResponse<z.infer<typeof CategoryListSchema>>
-	> {
-		const response = await this.sendWithoutBody(
+	public async listCategories() {
+		const result = this.sendWithoutBody(
 			"/categories",
 			"GET",
-			CategoryListSchema,
+			schemaOfCategoryList,
 		);
-		return response;
+		return result;
 	}
-	public async getCategory(
-		categoryId: number,
-	): Promise<ApiResponse<z.infer<typeof CategorySchema>>> {
-		const categoryIdPath = categoryId.toString(10);
-		const response = await this.sendWithoutBody(
-			`/categories/${categoryIdPath}`,
+	public async getCategory(id: number) {
+		const categoryIdStr = id.toString(10);
+		const result = this.sendWithoutBody(
+			`/categories/${categoryIdStr}`,
 			"GET",
-			CategorySchema,
+			schemaOfCategory,
 		);
-		return response;
+		return result;
 	}
-	public async createCategory(
-		payload: CategoryPayload,
-	): Promise<ApiResponse<z.infer<typeof CategorySchema>>> {
-		const response = await this.sendWithJsonBody(
+	public async createCategory(payload: CategoryPayload, token: string) {
+		const result = this.sendWithJsonBodyAuth(
 			"/categories",
 			"POST",
 			payload,
-			CategorySchema,
+			schemaOfCategory,
+			token,
 		);
-		return response;
+		return result;
 	}
-	public async deleteCategory(
-		categoryId: number,
-	): Promise<ApiResponse<z.infer<typeof DetailSchema>>> {
-		const categoryIdPath = categoryId.toString(10);
-		const response = await this.sendWithoutBody(
-			`/categories/${categoryIdPath}`,
+	public async deleteCategory(id: number, token: string) {
+		const categoryIdStr = id.toString(10);
+		const result = this.sendWithoutBodyAuth(
+			`/categories/${categoryIdStr}`,
 			"DELETE",
-			DetailSchema,
+			schemaOfDetail,
+			token,
 		);
-		return response;
+		return result;
 	}
-	public async listRecipes(): Promise<
-		ApiResponse<z.infer<typeof RecipeListSchema>>
-	> {
-		const response = await this.sendWithoutBody(
-			"/recipes",
+	public async listRecipes() {
+		const result = this.sendWithoutBody("/recipes", "GET", schemaOfRecipeList);
+		return result;
+	}
+	public async getRecipe(id: number) {
+		const recipeIdStr = id.toString(10);
+		const result = this.sendWithoutBody(
+			`/recipes/${recipeIdStr}`,
 			"GET",
-			RecipeListSchema,
+			schemaOfRecipe,
 		);
-		return response;
+		return result;
 	}
-	public async getRecipe(
-		recipeId: number,
-	): Promise<ApiResponse<z.infer<typeof RecipeSchema>>> {
-		const recipeIdPath = recipeId.toString(10);
-		const response = await this.sendWithoutBody(
-			`/recipes/${recipeIdPath}`,
-			"GET",
-			RecipeSchema,
-		);
-		return response;
-	}
-	public async createRecipe(
-		payload: RecipePayload,
-	): Promise<ApiResponse<z.infer<typeof RecipeSchema>>> {
-		const response = await this.sendWithJsonBody(
+	public async createRecipe(payload: RecipePayload, token: string) {
+		const fd = new FormData();
+		fd.append("title", payload.title);
+		fd.append("description", payload.description);
+		if (payload.image) fd.append("image", payload.image);
+		const result = this.sendAuth(
 			"/recipes",
 			"POST",
-			payload,
-			RecipeSchema,
+			{body: fd},
+			schemaOfRecipe,
+			token,
 		);
-		return response;
+		return result;
 	}
 	public async putRecipe(
-		recipeId: number,
+		id: number,
 		payload: RecipeUpdatePayload,
-	): Promise<ApiResponse<z.infer<typeof RecipeSchema>>> {
-		const recipeIdPath = recipeId.toString(10);
-		const response = await this.sendWithJsonBody(
-			`/recipes/${recipeIdPath}`,
+		token: string,
+	) {
+		const recipeIdStr = id.toString(10);
+		const result = this.sendWithJsonBodyAuth(
+			`/recipes/${recipeIdStr}`,
 			"PUT",
 			payload,
-			RecipeSchema,
+			schemaOfRecipe,
+			token,
 		);
-		return response;
+		return result;
 	}
 	public async patchRecipe(
-		recipeId: number,
+		id: number,
 		payload: RecipeUpdatePayload,
-	): Promise<ApiResponse<z.infer<typeof RecipeSchema>>> {
-		const recipeIdPath = recipeId.toString(10);
-		const response = await this.sendWithJsonBody(
-			`/recipes/${recipeIdPath}`,
+		token: string,
+	) {
+		const recipeIdStr = id.toString(10);
+		const result = this.sendWithJsonBodyAuth(
+			`/recipes/${recipeIdStr}`,
 			"PATCH",
 			payload,
-			RecipeSchema,
+			schemaOfRecipe,
+			token,
 		);
-		return response;
+		return result;
 	}
-	public async deleteRecipe(
-		recipeId: number,
-	): Promise<ApiResponse<z.infer<typeof DetailSchema>>> {
-		const recipeIdPath = recipeId.toString(10);
-		const response = await this.sendWithoutBody(
-			`/recipes/${recipeIdPath}`,
+	public async deleteRecipe(id: number, token: string) {
+		const recipeIdStr = id.toString(10);
+		const result = this.sendWithoutBodyAuth(
+			`/recipes/${recipeIdStr}`,
 			"DELETE",
-			DetailSchema,
+			schemaOfDetail,
+			token,
 		);
-		return response;
+		return result;
 	}
-	public async createRating(
-		payload: RatingPayload,
-	): Promise<ApiResponse<z.infer<typeof RatingSchema>>> {
-		const response = await this.sendWithJsonBody(
+	public async createRating(payload: RatingPayload, token: string) {
+		const result = this.sendWithJsonBodyAuth(
 			"/ratings",
 			"POST",
 			payload,
-			RatingSchema,
+			schemaOfRating,
+			token,
 		);
-		return response;
+		return result;
 	}
-	public async listRatingsForRecipe(
-		recipeId: number,
-	): Promise<ApiResponse<z.infer<typeof RatingListSchema>>> {
-		const recipeIdPath = recipeId.toString(10);
-		const response = await this.sendWithoutBody(
-			`/ratings/recipe/${recipeIdPath}`,
+	public async listRatingsForRecipe(id: number) {
+		const recipeIdStr = id.toString(10);
+		const result = this.sendWithoutBody(
+			`/ratings/recipe/${recipeIdStr}`,
 			"GET",
-			RatingListSchema,
+			schemaOfRatingList,
 		);
-		return response;
+		return result;
 	}
-	public async createUser(
-		payload: CreateUserPayload,
-	): Promise<ApiResponse<z.infer<typeof UserSchema>>> {
-		const response = await this.sendWithJsonBody(
+	public async createUser(payload: CreateUserPayload) {
+		const result = this.sendWithJsonBody(
 			"/users",
 			"POST",
 			payload,
-			UserSchema,
+			schemaOfUser,
 		);
-		return response;
+		return result;
 	}
-	public async getUser(
-		userId: number,
-	): Promise<ApiResponse<z.infer<typeof UserSchema>>> {
-		const userIdPath = userId.toString(10);
-		const response = await this.sendWithoutBody(
-			`/users/${userIdPath}`,
+	public async getUser(id: number) {
+		const userIdStr = id.toString(10);
+		const result = this.sendWithoutBody(
+			`/users/${userIdStr}`,
 			"GET",
-			UserSchema,
+			schemaOfUser,
 		);
-		return response;
+		return result;
 	}
 }

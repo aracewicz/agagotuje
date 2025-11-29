@@ -2,7 +2,6 @@
 	import {resolve} from "$app/paths";
 	import {fade, slide} from "svelte/transition";
 	import urlOfIcon from "./icon/icon-of-table-of-contents.svg";
-
 	type Entry = {readonly slug: string; readonly text: string};
 	const entries = [
 		{slug: "wypieki-i-desery", text: "Wypieki i desery"},
@@ -39,18 +38,15 @@
 	.table-of-contents {
 		position: relative;
 		display: inline-block;
-
 		/* Hide nav by default, show when checkbox is checked */
 		&:has(.toc-checkbox:checked) .toc-panel {
 			display: block;
 		}
 	}
-
 	.table-of-contents__icon {
 		width: 3.5rem;
 		height: 3.5rem;
 		position: relative;
-
 		label {
 			cursor: pointer;
 			width: 100%;
@@ -59,7 +55,6 @@
 			align-items: center;
 			justify-content: center;
 			position: relative;
-
 			.toc-checkbox {
 				position: absolute;
 				width: 100%;
@@ -69,7 +64,6 @@
 				padding: 0;
 				cursor: pointer;
 			}
-
 			.toc-icon {
 				width: 90%;
 				height: 90%;
@@ -78,7 +72,6 @@
 			}
 		}
 	}
-
 	.toc-panel {
 		position: absolute;
 		top: calc(100% + 0.5rem);
@@ -92,14 +85,12 @@
 		padding: 1rem 0.75rem 1.25rem;
 		z-index: 40;
 		display: none; /* hidden by default */
-
 		.toc-panel__header {
 			font-weight: 600;
 			text-align: center;
 			color: #0f5132;
 			margin-bottom: 0.5rem;
 		}
-
 		ul {
 			list-style: none;
 			margin: 0;
@@ -107,7 +98,6 @@
 			display: grid;
 			gap: 0.75rem;
 		}
-
 		li a {
 			display: block;
 			text-align: center;
@@ -119,20 +109,17 @@
 			font-size: 1.1rem;
 		}
 	}
-
 	/* Mobile responsiveness */
 	@media (max-width: 480px) {
 		.table-of-contents__icon {
 			width: 2.25rem;
 			height: 2.25rem;
-
 			.toc-icon {
 				width: 86%;
 				height: 86%;
 			}
 		}
 	}
-
 	.visually-hidden {
 		position: absolute !important;
 		height: 1px;

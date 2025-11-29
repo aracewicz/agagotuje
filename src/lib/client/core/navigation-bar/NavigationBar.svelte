@@ -1,11 +1,7 @@
 <script lang="ts">
 	import {resolve} from "$app/paths";
 	import TableOfContents from "./table-of-contents/TableOfContents.svelte";
-	/* logo removed (was urlOfIcon) */
-	/**
-	 * Top navigation bar fixed to the top of the screen.
-	 * Uses CSS variable --header-height which ContainerOfMainContent will respect.
-	 */
+	const props: {readonly user: {username: string} | null} = $props();
 </script>
 
 <header class="topbar" aria-label="Top navigation">
@@ -14,20 +10,18 @@
 			<TableOfContents />
 		</div>
 		<div class="topbar__center">
-			<a
-				href={resolve("/dodawanie-przepisu")}
-				class="topbar__center-link">Dodaj przepis!</a
+			<a href={resolve("/dodawanie-przepisu")} class="topbar__center-link"
+				>Dodaj przepis!</a
 			>
 		</div>
 		<div class="topbar__right">
-			<a
-				href={resolve("/rejestracja")}
-				class="topbar__link">Rejestracja</a
-			>
-			<a
-				href={resolve("/logowanie")}
-				class="topbar__link">Logowanie</a
-			>
+			{#if user}
+				<span class="topbar__user">Witaj, {user.username}!</span>
+				<a href={resolve("/profil")} class="topbar__link">Profil</a>
+			{:else}
+				<a href={resolve("/rejestracja")} class="topbar__link">Rejestracja</a>
+				<a href={resolve("/logowanie")} class="topbar__link">Logowanie</a>
+			{/if}
 		</div>
 	</div>
 </header>

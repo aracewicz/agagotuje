@@ -19,6 +19,15 @@
 		placeholder="Adres e-mail"
 		required
 	/>
+	<label class="visually-hidden" for="password">Hasło</label>
+	<input
+		id="password"
+		name="password"
+		type="password"
+		placeholder="Hasło"
+		required
+		minlength="6"
+	/>
 	<button type="submit">Kontynuuj</button>
 	<style>
 		.login-form {

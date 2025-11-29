@@ -6,7 +6,7 @@
 	const props: {readonly children: Snippet<[]>} = $props();
 </script>
 
-<NavigationBar />
+<NavigationBar user={props.data?.user ?? null} />
 <Header />
 <ContainerOfMainContent children={props.children} />
 

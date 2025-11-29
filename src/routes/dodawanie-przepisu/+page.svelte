@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {enhance} from "$app/forms";
-	import type {ActionData} from "./$types";
 	const props: {readonly form: ActionData | null} = $props();
 	const form = props.form;
 	function goBack() {

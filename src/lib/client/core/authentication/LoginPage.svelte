@@ -1,14 +1,10 @@
 <script lang="ts">
 	import {resolve} from "$app/paths";
 	import LoginForm from "./LoginForm.svelte";
-
 	type Props = {readonly heading?: string};
-
 	const props: Props = $props();
 	const {heading = "Logowanie:"} = props;
-
 	const submissionUrl = resolve("/logowanie");
-
 	function goBack() {
 		history.back();
 	}
