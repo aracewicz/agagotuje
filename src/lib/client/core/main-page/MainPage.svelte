@@ -1,28 +1,34 @@
 <script lang="ts">
-	import NavigationBar from "../navigation-bar/NavigationBar.svelte";
-	import Header from "../header/Header.svelte";
-	import ContainerOfMainContent from "../container-of-main-content/ContainerOfMainContent.svelte";
-	import type {Recipe} from "../../../server/core/API-client/ApiClient.ts";
-	type Props = {
-		readonly recipes: readonly Recipe[];
+	const props: {
+		readonly recipes: readonly {
+			readonly id: string;
+			readonly title: string;
+			readonly description: string;
+			readonly time_minutes: number;
+			readonly ingredients: readonly string[];
+			readonly steps: readonly string[];
+			readonly image_url: string;
+		}[];
 		readonly recipesError: string | null;
-	};
-	const props: Props = $props();
+	} = $props();
 	const MAX_INGREDIENTS = 6;
 	const MAX_STEPS = 3;
 	function formatTime(minutes: number): string {
 		if (!Number.isFinite(minutes) || minutes <= 0) {
 			return "Czas nieznany";
+		} else {
+			if (minutes < 60) {
+				return `${minutes} min`;
+			} else {
+				const hours = Math.floor(minutes / 60);
+				const remaining = minutes % 60;
+				if (remaining === 0) {
+					return `${hours} h`;
+				} else {
+					return `${hours} h ${remaining} min`;
+				}
+			}
 		}
-		if (minutes < 60) {
-			return `${minutes} min`;
-		}
-		const hours = Math.floor(minutes / 60);
-		const remaining = minutes % 60;
-		if (remaining === 0) {
-			return `${hours} h`;
-		}
-		return `${hours} h ${remaining} min`;
 	}
 </script>
 
@@ -57,26 +63,26 @@
 						<section class="recipe-card__section">
 							<h4>Składniki</h4>
 							<ul>
-								{#each recipe.ingredients.slice(0, MAX_INGREDIENTS) as ingredient, index (index)}
+								{#each recipe.ingredients?.slice(0, MAX_INGREDIENTS) as ingredient, index (index)}
 									<li>{ingredient}</li>
 								{/each}
 							</ul>
-							{#if recipe.ingredients.length > MAX_INGREDIENTS}
+							{#if recipe.ingredients?.length > MAX_INGREDIENTS}
 								<p class="recipe-card__more">
-									+ {recipe.ingredients.length - MAX_INGREDIENTS} kolejnych składników
+									+ {recipe.ingredients?.length - MAX_INGREDIENTS} kolejnych składników
 								</p>
 							{/if}
 						</section>
 						<section class="recipe-card__section">
 							<h4>Kroki</h4>
 							<ol>
-								{#each recipe.steps.slice(0, MAX_STEPS) as step, index (index)}
+								{#each recipe.steps?.slice(0, MAX_STEPS) as step, index (index)}
 									<li>{step}</li>
 								{/each}
 							</ol>
-							{#if recipe.steps.length > MAX_STEPS}
+							{#if recipe.steps?.length > MAX_STEPS}
 								<p class="recipe-card__more">
-									+ {recipe.steps.length - MAX_STEPS} kolejnych kroków
+									+ {recipe.steps?.length - MAX_STEPS} kolejnych kroków
 								</p>
 							{/if}
 						</section>

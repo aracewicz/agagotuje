@@ -15,12 +15,12 @@
 			>
 		</div>
 		<div class="topbar__right">
-			{#if user}
-				<span class="topbar__user">Witaj, {user.username}!</span>
-				<a href={resolve("/profil")} class="topbar__link">Profil</a>
-			{:else}
+			{#if props.user === null}
 				<a href={resolve("/rejestracja")} class="topbar__link">Rejestracja</a>
 				<a href={resolve("/logowanie")} class="topbar__link">Logowanie</a>
+			{:else}
+				<span class="topbar__user">Witaj, {props.user.username}!</span>
+				<a href={resolve("/profil")} class="topbar__link">Profil</a>
 			{/if}
 		</div>
 	</div>

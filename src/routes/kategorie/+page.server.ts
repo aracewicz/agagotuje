@@ -26,8 +26,9 @@ export const actions = {
 		const result = await apiClient.createCategory({name}, token);
 		if (!result.success) {
 			return fail(500, {error: result.error.message});
+		} else {
+			throw redirect(303, "/kategorie");
 		}
-		throw redirect(303, "/kategorie");
 	},
 	delete: async (event) => {
 		const {apiClient: apiClient} = await import(
@@ -37,15 +38,20 @@ export const actions = {
 		const id = form.get("id");
 		if (!id || typeof id !== "string") {
 			return fail(400, {error: "ID kategorii jest wymagane"});
+		} else {
+			const token = event.cookies.get("auth_token");
+			if (token === undefined) {
+				return fail(401, {
+					error: "Musisz być zalogowany, aby usunąć kategorię",
+				});
+			} else {
+				const result = await apiClient.deleteCategory(Number(id), token);
+				if (result.success) {
+					throw redirect(303, "/kategorie");
+				} else {
+					return fail(500, {error: result.error.message});
+				}
+			}
 		}
-		const token = cookies.get("auth_token");
-		if (!token) {
-			return fail(401, {error: "Musisz być zalogowany, aby usunąć kategorię"});
-		}
-		const result = await apiClient.deleteCategory(Number(id), token);
-		if (!result.success) {
-			return fail(500, {error: result.error.message});
-		}
-		throw redirect(303, "/kategorie");
 	},
 };

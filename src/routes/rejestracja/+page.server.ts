@@ -1,10 +1,10 @@
 import type {Actions} from "@sveltejs/kit";
 import {fail, redirect} from "@sveltejs/kit";
-const {apiClient: apiClient} = await import(
-	"../../lib/server/instances/API-client/apiClient.ts"
-);
 export const actions = {
 	default: async (event) => {
+		const {apiClient: apiClient} = await import(
+			"../../lib/server/instances/API-client/apiClient.ts"
+		);
 		const form = await event.request.formData();
 		const name = form.get("name");
 		const email = form.get("email");

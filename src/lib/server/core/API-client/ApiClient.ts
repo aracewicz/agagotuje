@@ -17,13 +17,14 @@ const schemaOfToken = z
 		token_type: z.string().nonempty(),
 	})
 	.readonly();
-const schemaOfUser = z
+export const schemaOfUser = z
 	.strictObject({
 		id: z.number().int().nonnegative(),
 		email: z.string().email().nonempty(),
 		username: z.string().nonempty(),
 	})
 	.readonly();
+export type User = z.infer<typeof schemaOfUser>;
 const schemaOfCategory = z
 	.strictObject({
 		id: z.number().int().nonnegative(),
@@ -177,6 +178,11 @@ export class ApiClient {
 				method,
 				headers: {...(init.headers ?? {}), Authorization: `Bearer ${token}`},
 			};
+			console.dir(
+				{formFields: Array.from((init.body as FormData).entries())},
+				{depth: null},
+			);
+			console.dir({rr}, {depth: null});
 			const res = await fetch(this.buildUrl(path), rr);
 			const parsed = await this.parseBody(res);
 			if (!res.ok)
@@ -333,7 +339,12 @@ export class ApiClient {
 		return result;
 	}
 	public async listRecipes() {
-		const result = this.sendWithoutBody("/recipes", "GET", schemaOfRecipeList);
+		const result = await this.sendWithoutBody(
+			"/recipes",
+			"GET",
+			schemaOfRecipeList,
+		);
+		console.dir({result}, {depth: null});
 		return result;
 	}
 	public async getRecipe(id: number) {
@@ -346,10 +357,14 @@ export class ApiClient {
 		return result;
 	}
 	public async createRecipe(payload: RecipePayload, token: string) {
-		const fd = new FormData();
+		const fd = new URLSearchParams();
 		fd.append("title", payload.title);
 		fd.append("description", payload.description);
-		if (payload.image) fd.append("image", payload.image);
+		fd.append("ingredients", payload.ingredients);
+		fd.append("time", payload.time.toString());
+		if (payload.image) {
+			fd.append("image", payload.image);
+		}
 		const result = this.sendAuth(
 			"/recipes",
 			"POST",

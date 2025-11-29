@@ -18,7 +18,7 @@ export async function load(event) {
 	return {user, error};
 }
 export const actions = {
-	create: async (event) => {
+	create: async (event): Promise<void> => {
 		const {apiClient: apiClient} = await import(
 			"../../lib/server/instances/API-client/apiClient.ts"
 		);
@@ -26,13 +26,22 @@ export const actions = {
 		const email = form.get("email");
 		const username = form.get("username");
 		const password = form.get("password");
-		if (!email || !username || !password) {
+		if (
+			email === null
+			|| username === null
+			|| password === null
+			|| typeof email !== "string"
+			|| typeof username !== "string"
+			|| typeof password !== "string"
+		) {
 			return fail(400, {error: "Wszystkie pola są wymagane"});
+		} else {
+			const result = await apiClient.createUser({email, username, password});
+			if (result.success) {
+				redirect(303, "/profil");
+			} else {
+				return fail(500, {error: result.error.message});
+			}
 		}
-		const result = await apiClient.createUser({email, username, password});
-		if (!result.success) {
-			return fail(500, {error: result.error.message});
-		}
-		throw redirect(303, "/profil");
 	},
 };
