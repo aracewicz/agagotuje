@@ -3,12 +3,11 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 DEFAULT_CATEGORIES = [
-    "Śniadanie",
-    "Obiad",
-    "Kolacja",
-    "Deser",
-    "Napoje",
-    "Przekaski"
+    "Wypieki i desery",
+    "Dania z maki",
+    "Dania glowne",
+    "Dodatki",
+    "Napoje"
 ]
 
 
