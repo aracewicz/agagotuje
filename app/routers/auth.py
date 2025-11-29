@@ -4,8 +4,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
-from app.core.security import hash_password, verify_password, get_current_admin
+from app.core.security import hash_password, verify_password
 from app.core.jwt import create_access_token
+
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

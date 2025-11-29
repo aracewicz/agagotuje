@@ -8,7 +8,6 @@ from app.models.user import User
 from app.crud.recipe import get_recipe, create_recipe, update_recipe, delete_recipe
 from app.core.security import get_current_user, get_current_admin
 from fastapi import File, UploadFile, Form
-import os
 from uuid import uuid4
 
 router = APIRouter(prefix="/recipes", tags=["Recipes"])
@@ -32,6 +31,8 @@ def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
 async def add_recipe(
     title: str = Form(...),
     description: str = Form(...),
+    ingredients: str = Form(...),
+    time: str = Form(...),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -56,9 +57,11 @@ async def add_recipe(
         data={
             "title": title,
             "description": description,
+            "ingredients": ingredients,
+            "time": time,
             "image_url": image_url
         },
-        user_id=current_user.id
+        author_id=current_user.id
     )
 
     return recipe

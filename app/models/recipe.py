@@ -10,8 +10,9 @@ class Recipe(Base):
     title = Column(String, nullable=False)
     ingredients = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    author_id = Column(Integer, ForeignKey("users.id"))
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     image_url = Column(String, nullable=True)
+    time = Column(Integer,nullable=False)
 
     category_id = Column(Integer, ForeignKey("categories.id"))
     category = relationship("Category", back_populates="recipes")

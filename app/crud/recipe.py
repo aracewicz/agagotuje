@@ -8,11 +8,14 @@ def get_recipe(db: Session, recipe_id: int):
     return db.query(Recipe).filter(Recipe.id == recipe_id).first()
 
 def create_recipe(db: Session, data: dict, user_id: int):
+
     recipe = Recipe(
         title=data["title"],
+        ingredients=data["ingredients"],
         description=data["description"],
+        time=data["time"],
         image_url=data.get("image_url"),
-        user_id=user_id
+        author_id=user_id
     )
 
     db.add(recipe)

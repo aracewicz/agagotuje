@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from app.models.category import Category, DEFAULT_CATEGORIES
 from app.core.database import SessionLocal
 
+
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

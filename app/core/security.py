@@ -15,26 +15,21 @@ pwd_context = CryptContext(
 )
 
 def hash_password(password: str) -> str:
-    
     return pwd_context.hash(password)
 
 def verify_password(plain: str, hashed: str) -> bool:
-    
     return pwd_context.verify(plain, hashed)
 
 def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    
     try:
-        
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("sub")
         role = payload.get("role") 
 
         if user_id is None:
-            
             raise HTTPException(status_code=401, detail="Invalid token")
 
     except JWTError:
@@ -43,16 +38,13 @@ def get_current_user(
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
-        
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
 
 
 def get_current_admin(current_user: User = Depends(get_current_user)):
-    
     if current_user.role != "admin":
-        
         raise HTTPException(
             status_code=403,
             detail="Admin access required"
