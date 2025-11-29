@@ -6,8 +6,7 @@ class RecipeBase(BaseModel):
     title: str
     ingredients: List[str]
     description: str
-    steps: List[str]
-    time_minutes: int
+    time: int
 class RecipeCreate(RecipeBase):
 
     pass
@@ -19,7 +18,7 @@ class RecipeUpdate(BaseModel):
 class RecipeOut(RecipeBase):
 
     id: int
-    owner_id: int
+    author_id: int
     image_url: str | None = None
 
     class Config:
