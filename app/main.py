@@ -36,6 +36,8 @@ app.add_exception_handler(Exception, unhandled_exception_handler)
 @app.on_event("startup")
 def startup():
 
+    # Create tables if they don't exist. For production environments prefer
+    # explicit migrations (Alembic) rather than create_all.
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()

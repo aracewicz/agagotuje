@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  agagotuje-backend:
+    network_mode: "host"
+    build:
+      args:
+        ARCH__DOCKER_IMAGE__TAG__BUILD_NUMBER: "20251019.0.436919"
+        ARCH__MIRROR__DATE: "2025/10/19"
+        PYTHON_PACKAGE_VERSION: "3.13.7-1"
+        PIP_PACKAGE_VERSION: "25.3-1"
+      context: "."
+      dockerfile: "Dockerfile"
+    volumes:
+      - consistency: "consistent"
+        read_only: false
+        source: ".."
+        target: "/home/developer/agagotuje-backend"
+        type: "bind"
+      - consistency: "consistent"
+        read_only: false
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+        type: "bind"
+    depends_on:
+      - agagotuje-db
+
+  agagotuje-db:
+    network_mode: "host"
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12Groszy!
+      POSTGRES_DB: przepisy
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

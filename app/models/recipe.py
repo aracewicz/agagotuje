@@ -11,6 +11,7 @@ class Recipe(Base):
     title = Column(String, nullable=False)
     ingredients = Column(JSONB, nullable=False)
     description = Column(Text, nullable=False)
+    # ForeignKey points to default table name `users`
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     image_url = Column(String, nullable=True)
     time = Column(Integer,nullable=False)

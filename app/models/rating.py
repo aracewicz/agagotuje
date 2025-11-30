@@ -9,6 +9,7 @@ class Rating(Base):
     id = Column(Integer, primary_key=True, index=True)
     value = Column(Integer, nullable=False) 
 
+    # ForeignKey points to default table name `users`
     user_id = Column(Integer, ForeignKey("users.id"))
     recipe_id = Column(Integer, ForeignKey("recipes.id"))
 

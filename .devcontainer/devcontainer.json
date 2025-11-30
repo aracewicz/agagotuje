@@ -1,0 +1,29 @@
+{
+    "capAdd": [],
+    "containerEnv": {},
+    "containerUser": "developer",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python", "ms-python.vscode-pylance"]
+        }
+    },
+    "dockerComposeFile": ["./docker-compose.yaml"],
+    "features": {},
+    "forwardPorts": [],
+    "init": false,
+    "mounts": [],
+    "name": "Developing",
+    "otherPortsAttributes": {},
+    "overrideCommand": true,
+    "portsAttributes": {},
+    "postCreateCommand": "pip install --break-system-packages -r requirements.txt",
+    "privileged": false,
+    "remoteEnv": {},
+    "remoteUser": "developer",
+    "securityOpt": [],
+    "service": "agagotuje-backend",
+    "shutdownAction": "stopCompose",
+    "updateRemoteUserUID": true,
+    "userEnvProbe": "none",
+    "workspaceFolder": "/home/developer/agagotuje-backend"
+}
