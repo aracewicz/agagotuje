@@ -1,0 +1,27 @@
+{
+	"capAdd": [],
+	"containerEnv": {},
+	"containerUser": "developer",
+	"customizations": {
+		"vscode": {"extensions": ["esbenp.prettier-vscode", "svelte.svelte-vscode"]}
+	},
+	"dockerComposeFile": ["./docker-compose.yaml"],
+	"features": {},
+	"forwardPorts": [],
+	"init": false,
+	"mounts": [],
+	"name": "Developing",
+	"otherPortsAttributes": {},
+	"overrideCommand": true,
+	"portsAttributes": {},
+	"postCreateCommand": "npm clean-install",
+	"privileged": false,
+	"remoteEnv": {},
+	"remoteUser": "developer",
+	"securityOpt": [],
+	"service": "agagotuje-frontend",
+	"shutdownAction": "stopCompose",
+	"updateRemoteUserUID": true,
+	"userEnvProbe": "none",
+	"workspaceFolder": "/home/developer/agagotuje-frontend"
+}
