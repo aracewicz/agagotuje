@@ -65,8 +65,10 @@ export type LoginPayload = {readonly email: string; readonly password: string};
 export type CategoryPayload = {readonly name: string};
 export type RecipePayload = {
 	readonly title: string;
-	readonly description: string;
-	readonly image?: File | null;
+	readonly description: string; // instructions for the recipe
+	readonly time?: number | null; // optional prep time in minutes
+	readonly ingredients?: string | null; // optional ingredients list
+	readonly image?: File | null; // optional image file to upload
 };
 export type RecipeUpdatePayload = {
 	readonly title: string | null;
@@ -178,10 +180,18 @@ export class ApiClient {
 				method,
 				headers: {...(init.headers ?? {}), Authorization: `Bearer ${token}`},
 			};
-			console.dir(
-				{formFields: Array.from((init.body as FormData).entries())},
-				{depth: null},
-			);
+			let formFields: unknown = null as unknown;
+			try {
+				const bodyAny = init.body as any;
+				if (bodyAny && typeof bodyAny.entries === "function") {
+					formFields = Array.from(bodyAny.entries());
+				} else {
+					formFields = bodyAny;
+				}
+			} catch (e) {
+				formFields = null;
+			}
+			console.dir({formFields}, {depth: null});
 			console.dir({rr}, {depth: null});
 			const res = await fetch(this.buildUrl(path), rr);
 			const parsed = await this.parseBody(res);
@@ -281,19 +291,21 @@ export class ApiClient {
 		);
 	}
 	public async registerUser(payload: RegisterPayload) {
-		const result = this.sendWithJsonBody(
+		const result = await this.sendWithJsonBody(
 			"/auth/register",
 			"POST",
 			payload,
 			schemaOfUser,
 		);
+		console.dir(payload, {depth: null});
+		console.dir(result, {depth: null});
 		return result;
 	}
 	public async login(payload: LoginPayload) {
 		const f = new URLSearchParams();
 		f.set("username", payload.email);
 		f.set("password", payload.password);
-		const result = this.sendWithFormBody(
+		const result = await this.sendWithFormBody(
 			"/auth/login",
 			"POST",
 			f,
@@ -302,7 +314,7 @@ export class ApiClient {
 		return result;
 	}
 	public async listCategories() {
-		const result = this.sendWithoutBody(
+		const result = await this.sendWithoutBody(
 			"/categories",
 			"GET",
 			schemaOfCategoryList,
@@ -311,7 +323,7 @@ export class ApiClient {
 	}
 	public async getCategory(id: number) {
 		const categoryIdStr = id.toString(10);
-		const result = this.sendWithoutBody(
+		const result = await this.sendWithoutBody(
 			`/categories/${categoryIdStr}`,
 			"GET",
 			schemaOfCategory,
@@ -319,7 +331,7 @@ export class ApiClient {
 		return result;
 	}
 	public async createCategory(payload: CategoryPayload, token: string) {
-		const result = this.sendWithJsonBodyAuth(
+		const result = await this.sendWithJsonBodyAuth(
 			"/categories",
 			"POST",
 			payload,
@@ -330,7 +342,7 @@ export class ApiClient {
 	}
 	public async deleteCategory(id: number, token: string) {
 		const categoryIdStr = id.toString(10);
-		const result = this.sendWithoutBodyAuth(
+		const result = await this.sendWithoutBodyAuth(
 			`/categories/${categoryIdStr}`,
 			"DELETE",
 			schemaOfDetail,
@@ -349,7 +361,7 @@ export class ApiClient {
 	}
 	public async getRecipe(id: number) {
 		const recipeIdStr = id.toString(10);
-		const result = this.sendWithoutBody(
+		const result = await this.sendWithoutBody(
 			`/recipes/${recipeIdStr}`,
 			"GET",
 			schemaOfRecipe,
@@ -357,15 +369,21 @@ export class ApiClient {
 		return result;
 	}
 	public async createRecipe(payload: RecipePayload, token: string) {
-		const fd = new URLSearchParams();
+		// Use FormData so we can upload files if provided. Don't set Content-Type header
+		// manually because the runtime will add the multipart boundary.
+		const fd = new FormData();
 		fd.append("title", payload.title);
 		fd.append("description", payload.description);
-		fd.append("ingredients", payload.ingredients);
-		fd.append("time", payload.time.toString());
-		if (payload.image) {
-			fd.append("image", payload.image);
+		if (payload.ingredients) {
+			fd.append("ingredients", payload.ingredients);
 		}
-		const result = this.sendAuth(
+		if (payload.time !== undefined && payload.time !== null) {
+			fd.append("time", payload.time.toString());
+		}
+		if (payload.image) {
+			fd.append("image", payload.image as Blob);
+		}
+		const result = await this.sendAuth(
 			"/recipes",
 			"POST",
 			{body: fd},
@@ -380,7 +398,7 @@ export class ApiClient {
 		token: string,
 	) {
 		const recipeIdStr = id.toString(10);
-		const result = this.sendWithJsonBodyAuth(
+		const result = await this.sendWithJsonBodyAuth(
 			`/recipes/${recipeIdStr}`,
 			"PUT",
 			payload,
@@ -395,7 +413,7 @@ export class ApiClient {
 		token: string,
 	) {
 		const recipeIdStr = id.toString(10);
-		const result = this.sendWithJsonBodyAuth(
+		const result = await this.sendWithJsonBodyAuth(
 			`/recipes/${recipeIdStr}`,
 			"PATCH",
 			payload,
@@ -406,7 +424,7 @@ export class ApiClient {
 	}
 	public async deleteRecipe(id: number, token: string) {
 		const recipeIdStr = id.toString(10);
-		const result = this.sendWithoutBodyAuth(
+		const result = await this.sendWithoutBodyAuth(
 			`/recipes/${recipeIdStr}`,
 			"DELETE",
 			schemaOfDetail,
@@ -415,7 +433,7 @@ export class ApiClient {
 		return result;
 	}
 	public async createRating(payload: RatingPayload, token: string) {
-		const result = this.sendWithJsonBodyAuth(
+		const result = await this.sendWithJsonBodyAuth(
 			"/ratings",
 			"POST",
 			payload,
@@ -426,7 +444,7 @@ export class ApiClient {
 	}
 	public async listRatingsForRecipe(id: number) {
 		const recipeIdStr = id.toString(10);
-		const result = this.sendWithoutBody(
+		const result = await this.sendWithoutBody(
 			`/ratings/recipe/${recipeIdStr}`,
 			"GET",
 			schemaOfRatingList,
@@ -434,7 +452,7 @@ export class ApiClient {
 		return result;
 	}
 	public async createUser(payload: CreateUserPayload) {
-		const result = this.sendWithJsonBody(
+		const result = await this.sendWithJsonBody(
 			"/users",
 			"POST",
 			payload,
@@ -444,7 +462,7 @@ export class ApiClient {
 	}
 	public async getUser(id: number) {
 		const userIdStr = id.toString(10);
-		const result = this.sendWithoutBody(
+		const result = await this.sendWithoutBody(
 			`/users/${userIdStr}`,
 			"GET",
 			schemaOfUser,
