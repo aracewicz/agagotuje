@@ -33,7 +33,7 @@ async def add_recipe(
     description: str = Form(...),
     ingredients: str = Form(...),
     time: str = Form(...),
-    image: UploadFile = File(None),
+    image_url: str = Form(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
