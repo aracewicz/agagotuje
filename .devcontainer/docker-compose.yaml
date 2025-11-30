@@ -1,5 +1,6 @@
 services:
   agagotuje-frontend:
+    network_mode: "host"
     build:
       args:
         ARCH__DOCKER_IMAGE__TAG__BUILD_NUMBER: "20251019.0.436919"
